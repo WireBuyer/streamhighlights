@@ -1,0 +1,39 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: spike_event_consumer
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
+    streams:
+      application-id: chatProcessor
+      replication-factor: 1
+      cleanup:
+        on-startup: true
+      properties:
+        session.timeout.ms: 7000
+        heartbeat.interval.ms: 3000
+        auto.offset.reset: earliest
+        processing.guarantee: at_least_once
+  datasource:
+    url: jdbc:postgresql://localhost:5432/db
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  config:
+    import: "file:.env[.properties]"
+
+logging:
+  level:
+    root: warn
