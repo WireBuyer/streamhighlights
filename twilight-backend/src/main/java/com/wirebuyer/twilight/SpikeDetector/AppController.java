@@ -1,7 +1,7 @@
 package com.wirebuyer.twilight.SpikeDetector;
 
 import com.wirebuyer.twilight.SpikeDetector.dto.BroadcastDTO;
-import com.wirebuyer.twilight.SpikeDetector.entity.Spike;
+import com.wirebuyer.twilight.SpikeDetector.dto.SpikeDTO;
 import com.wirebuyer.twilight.SpikeDetector.kafka.SpikeSensitivity;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
@@ -26,14 +26,14 @@ public class AppController {
     }
 
     @GetMapping("/broadcasts/{streamId}")
-    public BroadcastDTO getBroadcast(@PathVariable Long streamId) {
+    public BroadcastDTO getBroadcast(@PathVariable String streamId) {
         return appService.getBroadcast(streamId);
     }
 
     // get spikes for a broadcast
     @GetMapping("/broadcasts/{streamId}/spikes")
-    public List<Spike> getSpikes(@PathVariable Long streamId,
-                                 @RequestParam(defaultValue = "HIGH") SpikeSensitivity sensitivity) {
+    public List<SpikeDTO> getSpikes(@PathVariable Long streamId,
+                                    @RequestParam(defaultValue = "LOW") SpikeSensitivity sensitivity) {
         return appService.getSpikes(streamId, sensitivity);
     }
 
