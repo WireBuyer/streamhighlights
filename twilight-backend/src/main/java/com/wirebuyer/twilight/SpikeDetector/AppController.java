@@ -37,21 +37,21 @@ public class AppController {
         return appService.getSpikes(streamId, sensitivity);
     }
 
-    // submit a channel to be watched
-    @PutMapping("/channels/{channelName}")
-    public void submitChannel(@PathVariable String channelName) {
-        appService.submitChannel(channelName);
-    }
+    // // submit a channel to be watched
+    // @PutMapping("/channels/{channelName}")
+    // public void submitChannel(@PathVariable String channelName) {
+    //     appService.submitChannel(channelName);
+    // }
 
-    // submit a vod to be processed
-    // maybe make this a list later to process multiple vods of a channel
-    @PostMapping("/broadcasts")
-    public void submitVod(@RequestBody String vodId) {
-        appService.submitVod(vodId);
-    }
+    // // submit a vod to be processed
+    // // maybe make this a list later to process multiple vods of a channel
+    // @PostMapping("/broadcasts")
+    // public void submitVod(@RequestBody String vodId) {
+    //     appService.submitVod(vodId);
+    // }
 
-    @GetMapping("/test")
-    public void test() {
-        appService.test();
-    }
+    // @GetMapping("/test")
+    // public void test() {
+    //     appService.test();
+    // }
 }

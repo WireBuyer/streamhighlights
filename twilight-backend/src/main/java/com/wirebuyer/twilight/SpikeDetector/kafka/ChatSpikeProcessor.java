@@ -48,6 +48,8 @@ public class ChatSpikeProcessor extends ContextualFixedKeyProcessor<String, Even
 
         // run every 15 minutes
         context.schedule(Duration.ofMinutes(15), PunctuationType.WALL_CLOCK_TIME, this::punctuate);
+        // run every 2 hours to remove old unmarked streams
+        context.schedule(Duration.ofHours(2), PunctuationType.WALL_CLOCK_TIME, this::punctuateOldEntries);
     }
 
     @Override
@@ -107,10 +109,10 @@ public class ChatSpikeProcessor extends ContextualFixedKeyProcessor<String, Even
             spikeStore.put(streamId, spikeEvent);
         }
 
-        String formatted = String.format("C: %.2f | R: %.2f | N: %.2f | T: %.3f",
-                currentRate, state.ewmaRate, SPIKE_THRESHOLD * state.ewmaRate, SPIKE_THRESHOLD);
-
-        System.out.print("\r" + formatted);
+//        String formatted = String.format("C: %.2f | R: %.2f | N: %.2f | T: %.3f",
+//                currentRate, state.ewmaRate, SPIKE_THRESHOLD * state.ewmaRate, SPIKE_THRESHOLD);
+//
+//        System.out.print("\r" + formatted);
     }
 
     private void updateEwmaRate(StreamState state, double currentRate, long currentTs) {
@@ -183,7 +185,6 @@ public class ChatSpikeProcessor extends ContextualFixedKeyProcessor<String, Even
     // deletes finished stream states if at least 5 minutes have passed since the stream ended
     private void punctuate(long timestamp) {
         long minTime = TimeUnit.MINUTES.toMillis(5);
-        System.out.println("Punctuator timestamp: " + timestamp + " now: " + Instant.now().toEpochMilli());
 
         // iterate over the state store keys
         try (KeyValueIterator<String, StreamState> iterator = streamStore.all()) {
@@ -191,6 +192,23 @@ public class ChatSpikeProcessor extends ContextualFixedKeyProcessor<String, Even
                 KeyValue<String, StreamState> next = iterator.next();
                 if (next.value.endTs != null &&
                         next.value.endTs + minTime < Instant.now().toEpochMilli()) {
+                    streamStore.delete(next.key);
+                    spikeStore.delete(next.key);
+                }
+            }
+        }
+    }
+
+    // backup punctuator to delete streams that were recorded but were never marked to deleted.
+    // happens if the program is stopped when the event comes through
+    private void punctuateOldEntries(long timestamp) {
+        long cutoffTime = TimeUnit.HOURS.toMillis(20);
+
+        try (KeyValueIterator<String, StreamState> iterator = streamStore.all()) {
+            while (iterator.hasNext()) {
+                KeyValue<String, StreamState> next = iterator.next();
+                StreamState state = next.value;
+                if (state.lastSpike + cutoffTime < Instant.now().toEpochMilli()) {
                     streamStore.delete(next.key);
                     spikeStore.delete(next.key);
                 }

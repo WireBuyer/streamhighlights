@@ -1,8 +1,8 @@
 package com.wirebuyer.twilight.SpikeDetector.kafka;
 
 public enum SpikeSensitivity {
-    HIGH(1.4, 3.5, 0.4),
-    MEDIUM(1.6, 3.5, 0.35),
+    HIGH(1.3, 3.0, 0.4),
+    MEDIUM(1.6, 3.25, 0.35),
     LOW(1.9, 3.5, 0.3);
 
     public final double base;
