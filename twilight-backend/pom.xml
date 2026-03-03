@@ -81,7 +81,69 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.4.6</version>
+                <configuration>
+                    <container>
+                        <mainClass>com.wirebuyer.twilight.TwilightApplication</mainClass>
+                        <user>1000:1000</user>
+                    </container>
+                    <from>
+                        <image>eclipse-temurin:25-jre-jammy</image>
+                        <platforms>
+                            <platform>
+                                <architecture>amd64</architecture>
+                                <os>linux</os>
+                            </platform>
+                            <platform>
+                                <architecture>arm64</architecture>
+                                <os>linux</os>
+                            </platform>
+                        </platforms>
+                    </from>
+                    <to>
+                        <image>osakasfavoritedev/twilight-backend</image>
+                    </to>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>local</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.google.cloud.tools</groupId>
+                        <artifactId>jib-maven-plugin</artifactId>
+                        <configuration>
+                            <container>
+                                <mainClass>com.wirebuyer.twilight.TwilightApplication</mainClass>
+                                <user>1000:1000</user>
+                            </container>
+                            <from>
+                                <image>eclipse-temurin:25-jre-jammy</image>
+                                <platforms>
+                                    <platform>
+                                        <architecture>amd64</architecture>
+                                        <os>linux</os>
+                                    </platform>
+                                </platforms>
+                            </from>
+                            <to>
+                                <image>twilight-backend</image>
+                                <tags>
+                                    <tag>local</tag>
+                                </tags>
+                            </to>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
 </project>

@@ -1,6 +1,7 @@
 spring:
   kafka:
-    bootstrap-servers: localhost:9092
+    # bootstrap-servers: localhost:9092
+    #    bootstrap-servers: broker:9092
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -22,7 +23,8 @@ spring:
         auto.offset.reset: earliest
         processing.guarantee: at_least_once
   datasource:
-    url: jdbc:postgresql://localhost:5432/db
+    #    url: jdbc:postgresql://localhost:5432/db
+    # url: jdbc:postgresql://db:5432/twilight_db
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jpa:
@@ -32,7 +34,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
   config:
-    import: "file:.env[.properties]"
+    import: optional:file:.env[.properties]
 
 logging:
   level:

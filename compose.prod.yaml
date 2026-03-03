@@ -1,0 +1,42 @@
+services:
+  db:
+    expose:
+      - 5432
+
+  broker:
+    expose:
+      - 9092
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092
+
+  frontend:
+    build: ./twilight-frontend
+    container_name: twilight-frontend
+    expose:
+      - 5173
+    networks:
+      - caddy-network
+
+  backend:
+    image: twilight-backend:local
+    container_name: twilight-backend
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/twilight_db
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SPRING_PROFILES_ACTIVE=prod
+    env_file:
+      - ./twilight-backend/.env
+    expose:
+      - 8080
+    depends_on:
+      - db
+      - broker
+    networks:
+      - caddy-network
+      - default
+
+networks:
+  caddy-network:
+    name: caddy-network
+    external: true

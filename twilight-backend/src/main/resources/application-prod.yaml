@@ -1,0 +1,5 @@
+spring:
+  kafka:
+    bootstrap-servers: broker:9092
+  datasource:
+    url: jdbc:postgresql://db:5432/twilight_db

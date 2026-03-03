@@ -1,29 +1,26 @@
+# add logging and health check
 services:
   db:
-    image: postgres:latest
-    ports:
-      - "5432:5432"
+    image: postgres:18
     environment:
-      - POSTGRES_DB=db
+      - POSTGRES_DB=twilight_db
       - POSTGRES_USER=${DB_USERNAME}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
-      - db:/var/lib/postgresql
+      - twilight_db:/var/lib/postgresql
+    networks:
+      - default
 
   broker:
-    image: apache/kafka:latest
-    # container_name: broker
-    ports:
-      - 9092:9092
-
+    image: apache/kafka:4.2.0
+    container_name: twilight-broker
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
-      KAFKA_LISTENERS: PLAINTEXT://broker:9092,CONTROLLER://localhost:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
-      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@broker:9093
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
@@ -33,13 +30,19 @@ services:
     volumes:
       - kafka-data:/var/lib/kafka/data
       - kafka-metadata:/var/lib/kafka/metadata
+      - kafka-secrets:/etc/kafka/secrets
+      - kafka-config:/mnt/shared/config
+    networks:
+      - default
 
 volumes:
-  db:
+  twilight_db:
   kafka-data:
   kafka-metadata:
+  kafka-secrets:
+  kafka-config:
 
-networks:
-  caddy-network:
-    name: caddy-network
-    external: true
+# networks:
+#   caddy-network:
+#     name: caddy-network
+#     external: true
