@@ -20,7 +20,6 @@ export default function App() {
           <Text fw={10}>Stream Highlights</Text>
           <Group>
             <Link to="/">Home</Link>
-            <Link to="/long">Long page</Link>
           </Group>
         </Group>
       </AppShell.Header>

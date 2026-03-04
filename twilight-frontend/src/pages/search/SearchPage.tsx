@@ -19,20 +19,9 @@ type Broadcast = {
   startedAt: string;
 };
 
-const dummyData: Broadcast[] = [
-  {
-    channelName: "dummy",
-    broadcasterId: "dummy",
-    streamId: "dummy",
-    streamTitle: "dummy",
-    vodId: null,
-    startedAt: "dummy",
-  },
-];
-
 export default function SearchPage() {
   const queryRef = useRef<string>("");
-  const [results, setResults] = useState<Broadcast[]>(dummyData);
+  const [results, setResults] = useState<Broadcast[]>([]);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
