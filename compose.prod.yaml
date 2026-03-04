@@ -10,7 +10,7 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://broker:9092
 
   frontend:
-    build: ./twilight-frontend
+    image: twilight-frontend:latest
     container_name: twilight-frontend
     expose:
       - 5173
@@ -18,7 +18,7 @@ services:
       - caddy-network
 
   backend:
-    image: twilight-backend:local
+    image: twilight-backend:latest
     container_name: twilight-backend
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/twilight_db

@@ -27,7 +27,11 @@ build-frontend:
 
 # Build the backend for arm64 and amd64 then push both  
 build-backend:
-    cd {{project}}-backend && mvn clean package jib:build -Djib.to.tags=latest,{{git_hash}}
+    cd {{project}}-backend && mvn -DskipTests clean package jib:build -Djib.to.tags=latest,{{git_hash}}
+
+# Creates an image for the backend without pushing
+local-backend:
+    mvn -Plocal -DskipTests clean package jib:dockerBuild
 
 # Build for both the frontend and backend 
 build-both: build-frontend build-backend
