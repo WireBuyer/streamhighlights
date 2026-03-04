@@ -1,0 +1,75 @@
+name: Build and deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  init:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      hash: ${{ steps.githash.outputs.hash }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            backend:
+              - 'twilight-backend/**'
+            frontend:
+              - 'twilight-frontend/**'
+      - name: Get git hash
+        id: githash
+        run: echo "hash=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+  backend:
+    needs: init
+    if: ${{ needs.init.outputs.backend == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "25"
+          cache: maven
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push with jib
+        run: |
+          cd twilight-backend 
+          mvn compile jib:build -Djib.to.tags=latest,${{ needs.init.outputs.hash }}
+
+  # building only for arm64 to speed it up
+  frontend:
+    needs: init
+    if: ${{ needs.init.outputs.frontend == 'true' }}
+    # change to ubuntu-latest for amd64
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - uses: actions/checkout@v6
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./twilight-frontend
+          # change to linux/amd64 for amd64
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/twilight-frontend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/twilight-frontend:${{ needs.init.outputs.hash }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
