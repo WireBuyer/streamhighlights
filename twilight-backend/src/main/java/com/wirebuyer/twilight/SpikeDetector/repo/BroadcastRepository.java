@@ -10,5 +10,5 @@ import java.util.Optional;
 public interface BroadcastRepository extends JpaRepository<Broadcast, Long> {
     Optional<Broadcast> findByStreamId(String id);
 
-    Page<Broadcast> findByChannelName(String channelName, Pageable pageable);
+    Page<Broadcast> findByChannelNameIgnoreCase(String channelName, Pageable pageable);
 }

@@ -29,7 +29,6 @@ public class SpikeEventConsumer {
 
         Spike spike = new Spike(spikeEvent);
         spike.setBroadcast(broadcast);
-        var result = spikeRepository.save(spike);
-        System.out.println("Saving spike event. result: " + result.toString());
+        spikeRepository.save(spike);
     }
 }

@@ -170,7 +170,7 @@ public class ChatSpikeProcessor extends ContextualFixedKeyProcessor<String, Even
         }
         // if it did last long enough, save it. includes a grace period
         if (currentTs - spikeEvent.lastUpdate > GRACE_PERIOD) {
-            Date date = new Date(currentTs);
+            // Date date = new Date(currentTs);
 //            System.out.println("-----Ended spike | Lasted: " + (currentTs - spikeEvent.spikeStart) + " | " + date + "-----\n");
             spikeEvent.spikeEnd = currentTs;
             state.lastSpike = currentTs;

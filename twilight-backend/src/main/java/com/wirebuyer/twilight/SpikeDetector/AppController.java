@@ -50,8 +50,17 @@ public class AppController {
     //     appService.submitVod(vodId);
     // }
 
-    // @GetMapping("/test")
-    // public void test() {
-    //     appService.test();
-    // }
+    //test2
+    @GetMapping("/test2")
+    public String test2() {
+        System.out.println("called test2 endpoint in controller");
+        return "Response from test2 endpoint";
+    }
+
+    @GetMapping("/test")
+    public String test() {
+        appService.test();
+
+        return "Response from test endpoint";
+    }
 }

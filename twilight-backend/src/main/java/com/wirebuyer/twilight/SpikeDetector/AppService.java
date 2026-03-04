@@ -3,6 +3,7 @@ package com.wirebuyer.twilight.SpikeDetector;
 import com.wirebuyer.twilight.SpikeDetector.domain.SpikeEvent;
 import com.wirebuyer.twilight.SpikeDetector.dto.BroadcastDTO;
 import com.wirebuyer.twilight.SpikeDetector.dto.SpikeDTO;
+import com.wirebuyer.twilight.SpikeDetector.entity.Broadcast;
 import com.wirebuyer.twilight.SpikeDetector.kafka.SpikeSensitivity;
 import com.wirebuyer.twilight.SpikeDetector.repo.BroadcastRepository;
 import com.wirebuyer.twilight.SpikeDetector.repo.SpikeRepository;
@@ -15,6 +16,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.List;
+
+import static com.wirebuyer.twilight.SpikeDetector.kafka.KafkaTopicConfig.DATABASE_TOPIC;
 
 @Service
 public class AppService {
@@ -30,7 +33,7 @@ public class AppService {
     }
 
     public Page<BroadcastDTO> getBroadcasts(String channelName, int page) {
-        return broadcastRepository.findByChannelName(channelName, PageRequest.of(page, 10))
+        return broadcastRepository.findByChannelNameIgnoreCase(channelName, PageRequest.of(page, 10))
                 .map(BroadcastDTO::toDto);
     }
 
@@ -59,14 +62,23 @@ public class AppService {
     }
 
     public void test() {
-        String streamId = "1234";
-        String sens = "HIGH";
-        long currentTs = Instant.now().toEpochMilli();
-        SpikeEvent spikeEvent = new SpikeEvent(streamId, sens, currentTs, currentTs);
-        spikeEvent.spikeEnd = currentTs + 10000;
-        System.out.println("Created and sending object: " + spikeEvent);
+        long now = Instant.now().toEpochMilli();
 
-        // kafkaTemplate.send(DATABASE_TOPIC, spikeEvent);
+        String streamId = "1234";
+        // ensure broadcast exists
+        broadcastRepository.findByStreamId(streamId)
+                .orElseGet(() -> {
+                    Broadcast b = new Broadcast(streamId, "testChannel", streamId, "testTitle", now);
+                    b.setEndedAt(now + 300);
+                    return broadcastRepository.save(b);
+                });
+
+        String sens = "HIGH";
+        SpikeEvent spikeEvent = new SpikeEvent(streamId, sens, now, now);
+        spikeEvent.spikeEnd = now + 10000;
+
+        kafkaTemplate.send(DATABASE_TOPIC, "test", spikeEvent);
+        System.out.println("Sent spike event from test: " + spikeEvent.toString());
     }
 }
 
