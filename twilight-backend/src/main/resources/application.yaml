@@ -23,8 +23,6 @@ spring:
         auto.offset.reset: earliest
         processing.guarantee: at_least_once
   datasource:
-    #    url: jdbc:postgresql://localhost:5432/db
-    # url: jdbc:postgresql://db:5432/twilight_db
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
   jpa:
