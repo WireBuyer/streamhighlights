@@ -46,7 +46,7 @@ jobs:
       - name: Build and push with jib
         run: |
           cd twilight-backend 
-          ./mvnw -B compile jib:build -Djib.to.tags=latest,${{ needs.init.outputs.hash }}
+          ./mvnw -B -ntp clean verify jib:build -Djib.to.tags=latest,${{ needs.init.outputs.hash }}
 
   # building only for arm64 to speed it up
   frontend:
