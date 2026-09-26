@@ -9,6 +9,7 @@ import com.wirebuyer.twilight.SpikeDetector.repo.BroadcastRepository;
 import com.wirebuyer.twilight.SpikeDetector.repo.SpikeRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -32,11 +33,21 @@ public class AppService {
         this.kafkaTemplate = kafkaTemplate;
     }
 
+    // this function returns the broadcasts of a channel
+    // consider renaming this to be less similar to getBroadcast
     public Page<BroadcastDTO> getBroadcasts(String channelName, int page) {
-        return broadcastRepository.findByChannelNameIgnoreCase(channelName, PageRequest.of(page, 10))
+        // could use both but since i want the sort to be dynamic use the enum
+        // Sort sort = Sort.by("startedAt").descending();
+        // Sort sort2 = Sort.by(Sort.Direction.DESC, "startedAt");
+
+        // implement an option in the frontend later to sort by asc too
+        Sort.Direction direction = Sort.Direction.DESC;
+        Sort sort = Sort.by(direction, "startedAt");
+        return broadcastRepository.findByChannelNameIgnoreCase(channelName, PageRequest.of(page, 10, sort))
                 .map(BroadcastDTO::toDto);
     }
 
+    // gets the actual info
     public BroadcastDTO getBroadcast(String streamId) {
         return broadcastRepository.findByStreamId(streamId)
                 .map(BroadcastDTO::toDto)
