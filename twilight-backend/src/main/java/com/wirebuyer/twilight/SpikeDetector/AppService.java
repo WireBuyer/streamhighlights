@@ -54,7 +54,7 @@ public class AppService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Broadcast not found"));
     }
 
-    public List<SpikeDTO> getSpikes(Long streamId, SpikeSensitivity sensitivity) {
+    public List<SpikeDTO> getSpikes(String streamId, SpikeSensitivity sensitivity) {
         return spikeRepository.findByBroadcast_StreamIdAndSensitivity(streamId, sensitivity)
                 .stream()
                 .map(SpikeDTO::toDto)

@@ -22,10 +22,12 @@ public class SpikeEventConsumer {
     }
 
     @KafkaListener(topics = DATABASE_TOPIC, groupId = "spike_saver")
-    // use payload to skip using contextrecord
+    // use payload to skip using consumerrecord
     public void dbWriter(@Payload SpikeEvent spikeEvent) {
         // look up the broadcast, use a hashmap later to avoid this
-        Broadcast broadcast = broadcastRepository.findByStreamId(spikeEvent.streamId).orElseThrow();
+        Broadcast broadcast = broadcastRepository.findByStreamId(spikeEvent.streamId)
+                .orElseThrow(() -> new IllegalStateException(
+                        "No broadcast found for stream ID: " + spikeEvent.streamId));
 
         Spike spike = new Spike(spikeEvent);
         spike.setBroadcast(broadcast);

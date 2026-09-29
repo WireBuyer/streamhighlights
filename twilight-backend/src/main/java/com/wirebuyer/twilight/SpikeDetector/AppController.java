@@ -32,7 +32,7 @@ public class AppController {
 
     // get spikes for a broadcast
     @GetMapping("/broadcasts/{streamId}/spikes")
-    public List<SpikeDTO> getSpikes(@PathVariable Long streamId,
+    public List<SpikeDTO> getSpikes(@PathVariable String streamId,
                                     @RequestParam(defaultValue = "LOW") SpikeSensitivity sensitivity) {
         return appService.getSpikes(streamId, sensitivity);
     }

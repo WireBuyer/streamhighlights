@@ -9,6 +9,6 @@ import java.util.List;
 
 @Repository
 public interface SpikeRepository extends JpaRepository<Spike, Long> {
-    List<Spike> findByBroadcast_StreamIdAndSensitivity(Long streamId, SpikeSensitivity sensitivity);
+    List<Spike> findByBroadcast_StreamIdAndSensitivity(String streamId, SpikeSensitivity sensitivity);
 
 }
