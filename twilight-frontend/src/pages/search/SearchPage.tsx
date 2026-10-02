@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Center,
   Stack,
@@ -20,38 +21,45 @@ type Broadcast = {
 };
 
 export default function SearchPage() {
-  const queryRef = useRef<string>("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const channelName = searchParams.get("channel") ?? "";
+  const pageNumber = Number(searchParams.get("page") ?? 0);
+  const page = Number.isInteger(pageNumber) && pageNumber >= 0 ? pageNumber : 0;
   const [results, setResults] = useState<Broadcast[]>([]);
-  const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
-  const fetchPage = async (page: number) => {
-    try {
-      const channelName = queryRef.current;
-      const url = `/api/broadcasts?channelName=${encodeURIComponent(channelName)}&page=${page}`;
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error("could not get data. Status: " + response.status);
+  useEffect(() => {
+    if (!channelName) return;
+    const controller = new AbortController();
+
+    const fetchPage = async () => {
+      try {
+        const url = `/api/broadcasts?channelName=${encodeURIComponent(channelName)}&page=${page}`;
+        const response = await fetch(url, { signal: controller.signal });
+        if (!response.ok) {
+          throw new Error("could not get data. Status: " + response.status);
+        }
+        const data = await response.json();
+        if (controller.signal.aborted) return;
+
+        setResults(data.content);
+        setTotalPages(data.totalPages);
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          console.error("Error fetching data:", error);
+        }
       }
-      const data = await response.json();
+    };
 
-      setResults(data.content);
-      setTotalPages(data.totalPages);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
+    void fetchPage();
+    return () => controller.abort();
+  }, [channelName, page]);
 
-    setPage(page);
-  };
-
-  const onSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
+  const onSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.currentTarget);
     const q = (data.get("channelQuery") as string).trim();
-    queryRef.current = q;
-
-    setPage(0);
-    fetchPage(0);
+    setSearchParams(q ? { channel: q, page: "0" } : {});
   };
 
   return (
@@ -61,7 +69,9 @@ export default function SearchPage() {
           <form onSubmit={onSubmit}>
             <Group>
               <TextInput
+                key={channelName}
                 name="channelQuery"
+                defaultValue={channelName}
                 placeholder="Search channel..."
                 flex={1}
               />
@@ -72,22 +82,22 @@ export default function SearchPage() {
       </Center>
 
       <Box>
-        <SearchList results={results} />
+        <SearchList results={channelName ? results : []} />
 
         <Center>
           <Group mt={16}>
             <Button
               disabled={page <= 0}
-              onClick={() => fetchPage(Math.max(0, page - 1))}
+              onClick={() => setSearchParams({ channel: channelName, page: String(page - 1) })}
             >
               Prev
             </Button>
             <Text>
-              Page {page + 1} / {totalPages}
+              Page {page + 1} / {channelName ? totalPages : 1}
             </Text>
             <Button
-              disabled={page + 1 >= totalPages}
-              onClick={() => fetchPage(page + 1)}
+              disabled={page + 1 >= (channelName ? totalPages : 1)}
+              onClick={() => setSearchParams({ channel: channelName, page: String(page + 1) })}
             >
               Next
             </Button>
