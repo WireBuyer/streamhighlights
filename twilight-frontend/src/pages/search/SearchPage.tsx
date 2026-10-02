@@ -26,6 +26,7 @@ export default function SearchPage() {
   const pageNumber = Number(searchParams.get("page") ?? 0);
   const page = Number.isInteger(pageNumber) && pageNumber >= 0 ? pageNumber : 0;
   const [results, setResults] = useState<Broadcast[]>([]);
+  const [displayedPage, setDisplayedPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
@@ -43,6 +44,7 @@ export default function SearchPage() {
         if (controller.signal.aborted) return;
 
         setResults(data.content);
+        setDisplayedPage(page);
         setTotalPages(data.totalPages);
       } catch (error) {
         if (!controller.signal.aborted) {
@@ -93,7 +95,7 @@ export default function SearchPage() {
               Prev
             </Button>
             <Text>
-              Page {page + 1} / {channelName ? totalPages : 1}
+              Page {channelName ? displayedPage + 1 : 1} / {channelName ? totalPages : 1}
             </Text>
             <Button
               disabled={page + 1 >= (channelName ? totalPages : 1)}
