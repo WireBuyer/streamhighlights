@@ -44,8 +44,8 @@ export default function SearchPage() {
         if (controller.signal.aborted) return;
 
         setResults(data.content);
-        setDisplayedPage(page);
-        setTotalPages(data.totalPages);
+        setDisplayedPage(data.page.number);
+        setTotalPages(data.page.totalPages);
       } catch (error) {
         if (!controller.signal.aborted) {
           console.error("Error fetching data:", error);
